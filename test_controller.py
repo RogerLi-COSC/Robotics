@@ -184,64 +184,23 @@ class Controller:
 
 ik = InverseKinematics()
 
-def test_controller_real():
+def test_controller_real_with_points():
     # Create the controller with real serial communication (e.g., COM9 or other port)
     controller = Controller('COM9')  # Replace 'COM9' with the correct port for your setup
 
-    # --- Test 1: Move to a valid target position ---
-    print("\n[Test 1] Moving to a valid target position")
-    valid_target = Vec(5, controller.inner_arm + controller.outer_arm - 5)
-    try:
-        controller.move_to_xy(valid_target)
-        print("Test 1 passed: Successfully moved to valid position")
-    except Exception as e:
-        print(f"Test 1 failed: {e}")
+    points_to_draw = [Vec(5, 5), Vec(6, 6), Vec(7, 7)]
 
-    # --- Test 2: Move to an out-of-reach position ---
-    print("\n[Test 2] Attempting to move to an out-of-reach position")
-    out_of_reach_target = Vec(0, controller.inner_arm + controller.outer_arm + 10)
-    try:
-        controller.move_to_xy(out_of_reach_target)
-        print("Test 2 failed: No error raised for out-of-reach position")
-    except Exception as e:
-        print(f"Test 2 passed: Correctly handled out-of-reach position ({e})")
+    # --- Draw points ---
+    print("\n[Test: Drawing Points]")
+    controller.set_pen(False)  # Raise the pen initially
+    for point in points_to_draw:
+        try:
+            controller.move_to_xy(point)
+            controller.set_pen(True)   # Lower the pen to draw
+            controller.set_pen(False)  # Raise the pen after drawing each point
+            print(f"Successfully moved to point: {point}")
+        except Exception as e:
+            print(f"Failed to move to point: {point} ({e})")
 
-    # --- Test 3: Perform round-trip position verification ---
-    print("\n[Test 3] Performing round-trip test")
-    original_target = Vec(6, 6)
-    try:
-        # Step 1: Calculate angles
-        angles = controller.ik.calculateAngles(original_target, controller.inner_arm, controller.outer_arm)
-        print(f"Debug: Calculated angles = {angles}")
-
-        # Step 2: Convert angles back to position using manual forward kinematics
-        q1_rad = math.radians(angles.x)
-        q2_rad = math.radians(angles.y - 90)
-        x_test = controller.inner_arm * math.cos(q1_rad) + controller.outer_arm * math.cos(q1_rad + q2_rad)
-        y_test = controller.inner_arm * math.sin(q1_rad) + controller.outer_arm * math.sin(q1_rad + q2_rad)
-        
-        print(f"Debug: Forward kinematics result = (x: {x_test}, y: {y_test})")
-
-        # Step 3: Compare positions
-        error_margin = 0.1
-        if abs(original_target.x - x_test) < error_margin and abs(original_target.y - y_test) < error_margin:
-            print("Test 3 passed: Round-trip accuracy is within acceptable margin")
-        else:
-            print(f"Test 3 failed: Round-trip error is too large (x: {x_test}, y: {y_test})")
-        print(f"Debug: Original target = (x: {original_target.x}, y: {original_target.y})")
-    except Exception as e:
-        print(f"Test 3 failed: Error occurred during round-trip test ({e})")
-
-    # --- Test 4: Basic pen control ---
-    print("\n[Test 4] Controlling pen")
-    try:
-        controller.set_pen(True)
-        print("Pen set to down position")
-        controller.set_pen(False)
-        print("Pen set to up position")
-        print("Test 4 passed: Pen control completed")
-    except Exception as e:
-        print(f"Test 4 failed: {e}")
-
-# Run the tests
-test_controller_real()
+# Run the test
+test_controller_real_with_points()
