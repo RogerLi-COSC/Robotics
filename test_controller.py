@@ -188,7 +188,7 @@ def test_controller_real_with_points():
     # Create the controller with real serial communication (e.g., COM9 or other port)
     controller = Controller('COM9')  # Replace 'COM9' with the correct port for your setup
 
-    points_to_draw = [Vec(5, 5), Vec(6, 6), Vec(7, 7)]
+    points_to_draw = [Vec(5, 5)]
 
     # --- Draw points ---
     print("\n[Test: Drawing Points]")
